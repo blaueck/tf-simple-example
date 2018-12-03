@@ -3,6 +3,7 @@ import glob
 import gzip
 
 import numpy as np
+from scipy.io import loadmat
 
 
 def _glob(pattern):
@@ -85,6 +86,18 @@ def get_mnist(image_files, label_files):
     return images, labels
 
 
+def get_svhn(data_file):
+
+    data = loadmat(data_file)
+    images = data['X'].transpose(3, 0, 1, 2)
+    labels = data['y'].reshape(-1)
+
+    # map label 10 to 0
+    labels[labels == 10] = 0
+
+    return images, labels
+
+
 def load_data(root, dataset, is_training):
 
     if dataset == 'cifar10':
@@ -131,6 +144,17 @@ def load_data(root, dataset, is_training):
         assert label_files, 'no label file is matched.'
 
         data = get_mnist(img_files, label_files)
+        meta = {'n_class': 10}
+    
+    elif dataset == 'svhn':
+
+        if is_training:
+            pattern = os.path.join(root, 'train_32x32.mat')
+        else:
+            pattern = os.path.join(root, 'test_32x32.mat')
+        
+        data_file = _glob(pattern)[0]
+        data = get_svhn(data_file)
         meta = {'n_class': 10}
 
     else:

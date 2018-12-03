@@ -84,7 +84,7 @@ def main(FLAGS):
         # build tf_dataset for training
         train_dataset = (tf.data.Dataset
             .from_tensor_slices(train_data)
-            .map(preprocess_for_train(args.dataset not in ['mnist']), 8)
+            .map(preprocess_for_train(args.dataset not in ['mnist', 'svhn']), 8)
             .shuffle(10000, seed=FLAGS.seed)
             .batch(FLAGS.batch_size)
             .prefetch(1))
@@ -285,10 +285,10 @@ def main(FLAGS):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='train dnn')
-    parser.add_argument('--dataset', default='mnist',
+    parser.add_argument('--dataset', default='svhn',
                         help='the training dataset')
     parser.add_argument(
-        '--dataset_root', default='./data/mnist', help='dataset root')
+        '--dataset_root', default='./data/svhn', help='dataset root')
     parser.add_argument(
         '--logdir', default='log/simple_cnn', help='log directory')
     parser.add_argument('--restore', default='', help='snapshot path')
@@ -304,7 +304,7 @@ if __name__ == '__main__':
     parser.add_argument('--boundaries', default='30,50,60',
                         help='learning rate boundaries')
     parser.add_argument(
-        '--values', default='1e-1,1e-2,1e-3,1e-4', help='learning rate values')
+        '--values', default='1e-2,1e-2,1e-3,1e-4', help='learning rate values')
 
     parser.add_argument('--log_every', default=100, type=int,
                         help='display and log frequency')
