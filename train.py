@@ -13,23 +13,26 @@ import tensorflow as tf
 from data_utils import load_data, split_data
 
 
-def preprocess_for_train(image, label):
-    shape = image.get_shape().as_list()
-    image = tf.pad(image, [[4, 4], [4, 4], [0, 0]])
-    image = tf.random_crop(image, shape)
-    image = tf.image.random_flip_left_right(image)
-    image = (tf.to_float(image) - 127.5) / 128.
-    image = tf.transpose(image, [2, 0, 1])
+def preprocess_for_train(random_flip=True):
+    def func(image, label):
+        shape = image.get_shape().as_list()
+        image = tf.pad(image, [[4, 4], [4, 4], [0, 0]])
+        image = tf.random_crop(image, shape)
+        if random_flip:
+            image = tf.image.random_flip_left_right(image)
+        image = (tf.to_float(image) - 127.5) / 128.
+        image = tf.transpose(image, [2, 0, 1])
 
-    label = tf.to_int32(label)
-    return image, label
+        label = tf.to_int64(label)
+        return image, label
+    return func
 
 
 def preprocess_for_eval(image, label):
     image = (tf.to_float(image) - 127.5) / 128.
     image = tf.transpose(image, [2, 0, 1])
 
-    label = tf.to_int32(label)
+    label = tf.to_int64(label)
     return image, label
 
 
@@ -81,7 +84,7 @@ def main(FLAGS):
         # build tf_dataset for training
         train_dataset = (tf.data.Dataset
             .from_tensor_slices(train_data)
-            .map(preprocess_for_train, 8)
+            .map(preprocess_for_train(args.dataset not in ['mnist']), 8)
             .shuffle(10000, seed=FLAGS.seed)
             .batch(FLAGS.batch_size)
             .prefetch(1))
@@ -282,10 +285,10 @@ def main(FLAGS):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='train dnn')
-    parser.add_argument('--dataset', default='cifar10',
+    parser.add_argument('--dataset', default='mnist',
                         help='the training dataset')
     parser.add_argument(
-        '--dataset_root', default='./data/cifar-10-batches-bin', help='dataset root')
+        '--dataset_root', default='./data/mnist', help='dataset root')
     parser.add_argument(
         '--logdir', default='log/simple_cnn', help='log directory')
     parser.add_argument('--restore', default='', help='snapshot path')
