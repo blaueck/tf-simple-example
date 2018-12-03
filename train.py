@@ -15,7 +15,7 @@ from data_utils import load_data, split_data
 
 def preprocess_for_train(image, label):
     shape = image.get_shape().as_list()
-    image = tf.pad(image, [[2, 2], [2, 2], [0, 0]])
+    image = tf.pad(image, [[4, 4], [4, 4], [0, 0]])
     image = tf.random_crop(image, shape)
     image = tf.image.random_flip_left_right(image)
     image = (tf.to_float(image) - 127.5) / 128.
@@ -82,16 +82,16 @@ def main(FLAGS):
         train_dataset = (tf.data.Dataset
             .from_tensor_slices(train_data)
             .map(preprocess_for_train, 8)
-            .shuffle(5000, seed=FLAGS.seed)
+            .shuffle(10000, seed=FLAGS.seed)
             .batch(FLAGS.batch_size)
-            .prefetch(4))
+            .prefetch(1))
 
         # build tf_dataset for val
         val_dataset = (tf.data.Dataset
             .from_tensor_slices(val_data)
             .map(preprocess_for_eval, 8)
             .batch(FLAGS.batch_size)
-            .prefetch(4))
+            .prefetch(1))
 
         # clean up and release memory
         del data, train_data, val_data
